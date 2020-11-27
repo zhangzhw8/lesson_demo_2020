@@ -10,13 +10,14 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
+from weixin.core.accounts import WeixinAccount
+from django.conf import settings
 
-from django.conf.urls import url
-from django.urls import include
 
-from weixin import views
-
-urlpatterns = [
-    url(r'^$', views.index),
-    url(r'', include("moments.urls"))
-]
+def basic(request):
+    # 微信相关配置
+    is_weixin_visit = WeixinAccount().is_weixin_visit(request)
+    adapt_site_url = settings.WEIXIN_SITE_URL if is_weixin_visit else settings.SITE_URL
+    return {
+        'ADAPT_SITE_URL': adapt_site_url,
+    }

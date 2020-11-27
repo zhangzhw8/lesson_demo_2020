@@ -1,22 +1,54 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.models import AnonymousUser
+"""
+Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
+Edition) available.
+Copyright (C) 2017-2019 THL A29 Limited, a Tencent company. All rights reserved.
+Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://opensource.org/licenses/MIT
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+"""
+
+import logging
+
 from django.utils.deprecation import MiddlewareMixin
 from django.utils.functional import SimpleLazyObject
+from django.contrib.auth.models import AnonymousUser
 
-from . import settings as weixin_settings
+from blueapps.account.models import UserProperty
+from blueapps.account import get_user_model
+
+from . import settings
 from .accounts import WeixinAccount
 from .models import BkWeixinUser
+
+logger = logging.getLogger('root')
 
 
 def get_user(request):
     user = None
-    user_id = request.session.get('weixin_user_id')
+    user_id = request.COOKIES.get('weixin_user_id')
     if user_id:
         try:
             user = BkWeixinUser.objects.get(pk=user_id)
         except BkWeixinUser.DoesNotExist:
             user = None
     return user or AnonymousUser()
+
+
+def get_bk_user(request):
+    bkuser = None
+    if request.weixin_user and not isinstance(request.weixin_user, AnonymousUser):
+        user_model = get_user_model()
+        try:
+            user_property = UserProperty.objects.get(key='wx_userid', value=request.weixin_user.userid)
+        except UserProperty.DoesNotExist:
+            logger.warning('user[wx_userid=%s] not in UserProperty' % request.weixin_user.userid)
+        else:
+            bkuser = user_model.objects.get(username=user_property.user.username)
+    return bkuser or AnonymousUser()
 
 
 class WeixinProxyPatchMiddleware(MiddlewareMixin):
@@ -37,9 +69,9 @@ class WeixinProxyPatchMiddleware(MiddlewareMixin):
     """
 
     def process_request(self, request):
-        if weixin_settings.USE_WEIXIN and weixin_settings.X_FORWARDED_WEIXIN_HOST in request.META:
+        if settings.USE_WEIXIN and settings.X_FORWARDED_WEIXIN_HOST in request.META:
             # patch X-Forwaded-Host header
-            request.META["HTTP_X_FORWARDED_HOST"] = request.META.get(weixin_settings.X_FORWARDED_WEIXIN_HOST)
+            request.META["HTTP_X_FORWARDED_HOST"] = request.META.get(settings.X_FORWARDED_WEIXIN_HOST)
 
 
 class WeixinAuthenticationMiddleware(MiddlewareMixin):
@@ -52,6 +84,18 @@ class WeixinAuthenticationMiddleware(MiddlewareMixin):
             "'weixin.core.middleware.WeixinAuthenticationMiddleware'."
         )
         setattr(request, 'weixin_user', SimpleLazyObject(lambda: get_user(request)))
+        setattr(request, 'user', SimpleLazyObject(lambda: get_bk_user(request)))
+
+    def process_response(self, request, response):
+        """
+        @summary: 移动端设置 weixin_user_id 到cookies中，避免 SESSION_COOKIE_AGE 时间太短导致 session 过期
+        @param request:
+        @param response:
+        @return:
+        """
+        if request.session.get('weixin_user_id'):
+            response.set_cookie('weixin_user_id', request.session['weixin_user_id'])
+        return response
 
 
 class WeixinLoginMiddleware(MiddlewareMixin):

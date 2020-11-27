@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
+Edition) available.
+Copyright (C) 2017-2019 THL A29 Limited, a Tencent company. All rights reserved.
+Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://opensource.org/licenses/MIT
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+"""
+
 import os
 
 from blueapps.patch.settings_open_saas import SITE_URL, STATIC_URL
@@ -6,7 +18,7 @@ from blueapps.patch.settings_open_saas import SITE_URL, STATIC_URL
 # 是否开启使用
 USE_WEIXIN = True
 # 是否企业微信
-IS_QY_WEIXIN = False
+IS_QY_WEIXIN = 'BKAPP_IS_QY_WEIXIN' in os.environ
 # django 配置, 可使用自定义HOST
 USE_X_FORWARDED_HOST = USE_WEIXIN
 # 解决多级Nginx代理导致原始Host(`X-Forwarded-Host`)失效问题
@@ -22,8 +34,8 @@ WEIXIN_APP_EXTERNAL_HOST = os.getenv("BKAPP_WEIXIN_APP_EXTERNAL_HOST")
 WEIXIN_SCOPE = 'snsapi_base'
 
 # 蓝鲸微信请求URL前缀
-WEIXIN_SITE_URL = SITE_URL + 'weixin/'
+WEIXIN_SITE_URL = '%sweixin/' % SITE_URL
 # 蓝鲸微信本地静态文件请求URL前缀
-WEIXIN_STATIC_URL = STATIC_URL + 'weixin/'
+WEIXIN_STATIC_URL = '%sweixin/' % STATIC_URL
 # 蓝鲸微信登录的URL
-WEIXIN_LOGIN_URL = SITE_URL + 'weixin/login/'
+WEIXIN_LOGIN_URL = '%sweixin/login/' % SITE_URL

@@ -1,4 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
+Edition) available.
+Copyright (C) 2017-2019 THL A29 Limited, a Tencent company. All rights reserved.
+Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://opensource.org/licenses/MIT
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+"""
+
 import abc
 import logging
 
@@ -6,11 +18,10 @@ import requests
 
 from . import settings as weixin_settings
 
-logger = logging.getLogger("app")
+logger = logging.getLogger('root')
 
 
-class API(object):
-    __metaclass__ = abc.ABCMeta
+class API(object, metaclass=abc.ABCMeta):
     timeout = 10
     ssl_verify = False
 
@@ -85,7 +96,7 @@ class WeiXinApi(ApiMixin):
         access_token = data.get('access_token')
         openid = data.get('openid')
         if access_token is None or openid is None:
-            logger.error(u"登录票据CODE接口返回无access_token或openid")
+            logger.error("登录票据CODE接口返回无access_token或openid")
             return False, {}
         return True, {'access_token': access_token, 'userid': openid}
 
@@ -192,7 +203,7 @@ class QyWeiXinApi(ApiMixin):
 
         userid = user_info.get('UserId')
         if not (access_token and userid):
-            logger.error(u"企业微信：登录票据CODE接口返回无access_token或userid")
+            logger.error("企业微信：登录票据CODE接口返回无access_token或userid")
             return False, {}
 
         return True, {'access_token': access_token, 'userid': userid}

@@ -1,5 +1,15 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 """
+Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
+Edition) available.
+Copyright (C) 2017-2019 THL A29 Limited, a Tencent company. All rights reserved.
+Licensed under the MIT License (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+http://opensource.org/licenses/MIT
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
 微信账号体系相关的Account
 """
 import logging
@@ -7,6 +17,8 @@ import time
 import random
 
 from django.http import HttpResponseRedirect, HttpResponse
+from django.middleware.csrf import rotate_token
+from django.utils.translation import ugettext_lazy as _
 
 from . import settings as weixin_settings
 from .api import WeiXinApi, QyWeiXinApi
@@ -20,7 +32,7 @@ except ImportError:
     # py3
     from urllib.parse import urlparse, urlencode, urlunsplit
 
-logger = logging.getLogger("app")
+logger = logging.getLogger("root")
 
 
 class WeixinAccountSingleton(object):
@@ -30,9 +42,6 @@ class WeixinAccountSingleton(object):
     _instance = None
 
     def __new__(cls, *args, **kwargs):
-        '''
-        @param class_:
-        '''
         if not isinstance(cls._instance, cls):
             cls._instance = object.__new__(cls, *args, **kwargs)
         return cls._instance
@@ -92,7 +101,7 @@ class WeixinAccount(WeixinAccountSingleton):
         """
         url = urlparse(request.build_absolute_uri())
         path = weixin_settings.WEIXIN_LOGIN_URL
-        query = urlencode({'curl': request.get_full_path()})
+        query = urlencode({'c_url': request.get_full_path()})
         callback_url = urlunsplit((url.scheme, url.netloc, path, query, url.fragment))
         state = self.set_weixin_oauth_state(request)
         redirect_uri = self.get_oauth_redirect_url(callback_url, state)
@@ -117,7 +126,7 @@ class WeixinAccount(WeixinAccountSingleton):
             request.session['WEIXIN_OAUTH_STATE_TIMESTAMP'] = None
             return True
         except Exception as e:
-            logger.exception(u"验证请求weixin code的 state参数出错： %s" % e)
+            logger.exception(_("验证请求weixin code的 state参数出错： %s") % e)
             return False
 
     def verfiy_weixin_oauth_code(self, request):
@@ -150,24 +159,28 @@ class WeixinAccount(WeixinAccountSingleton):
         """
         if not self.is_weixin_visit(request):
             # TODO 改造为友好页面
-            return HttpResponse(u"非微信访问，或应用未启动微信访问")
+            return HttpResponse(_("非微信访问，或应用未启动微信访问"))
         # 验证回调state
         if not self.verify_weixin_oauth_state(request):
             # TODO 改造为友好页面
-            return HttpResponse(u"State验证失败")
+            return HttpResponse(_("State验证失败"))
         # 验证code有效性
-        is_code_vaild, base_data = self.verfiy_weixin_oauth_code(request)
-        if not is_code_vaild:
+        is_code_valid, base_data = self.verfiy_weixin_oauth_code(request)
+        if not is_code_valid:
             # TODO 改造为友好页面
-            return HttpResponse(u"登录失败")
+            return HttpResponse(_("登录失败"))
 
         # 获取用户信息并设置用户
         userinfo = self.get_user_info(base_data)
+        logger.info('get_user_info kwargs: %s, result: %s' % (base_data, userinfo))
         userid = userinfo.pop('userid')
         user = BkWeixinUser.objects.get_update_or_create_user(userid, **userinfo)
         # 设置session
         request.session['weixin_user_id'] = user.id
         setattr(request, 'weixin_user', user)
+
+        # need csrftoken
+        rotate_token(request)
 
         # 跳转到用户实际访问URL
         callback_url = self.get_callback_url(request)

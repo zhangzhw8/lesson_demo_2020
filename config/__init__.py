@@ -38,9 +38,9 @@ def get_env_or_raise(key):
 
 
 # 应用 ID
-APP_CODE = 'lesson-test-demo'
+APP_CODE = 'lesson-demo-2020'
 # 应用用于调用云 API 的 Secret
-SECRET_KEY = '7bb748cc-4d22-4db2-96ce-93879d09381e'
+SECRET_KEY = 'e9705c15-9c07-4884-9c8e-d5d875c664e7'
 
 # SaaS运行版本，如非必要请勿修改
 RUN_VER = 'open'

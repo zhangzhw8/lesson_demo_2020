@@ -80,7 +80,7 @@ class RequestProvider(MiddlewareMixin):
         request.is_wechat = lambda: (
             bool(settings.RE_WECHAT.search(request.META.get('HTTP_USER_AGENT', '')))
             and request_origin_url == settings.WEIXIN_BK_URL
-            and request.path.startswith(settings.WINXIN_SITE_URL)
+            # and request.path.startswith(settings.WINXIN_SITE_URL)
             and not request.is_rio()
         )
 

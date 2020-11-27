@@ -17,6 +17,6 @@ from django.urls import include
 from weixin import views
 
 urlpatterns = [
-    url(r'^$', views.index),
+    url(r'^home$', views.index),
     url(r'', include("moments.urls"))
 ]

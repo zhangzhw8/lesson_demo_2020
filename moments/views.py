@@ -11,6 +11,7 @@ from django.http import JsonResponse
 from blueking.component.shortcuts import get_client_by_request
 from moments.models import WeChatUser, Status, Reply
 from moments.tasks import send_mail
+from weixin.core.accounts import WeixinAccount
 
 
 def home(request):
@@ -82,7 +83,9 @@ def submit_post(request):
     if text:
         status = Status(user=user, text=text, pics=name)
         status.save()
-        return redirect("/status")
+        is_weixin_visit = WeixinAccount().is_weixin_visit(request)
+        adapt_site_url = settings.WEIXIN_SITE_URL if is_weixin_visit else settings.SITE_URL
+        return redirect("{}status".format(adapt_site_url))
 
     return render(request, "moments/my_post.html")
 

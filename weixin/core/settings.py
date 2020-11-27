@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 
-from config.default import SITE_URL, STATIC_URL
-
+from blueapps.patch.settings_open_saas import SITE_URL, STATIC_URL
 
 # 是否开启使用
 USE_WEIXIN = True

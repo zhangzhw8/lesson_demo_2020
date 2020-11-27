@@ -69,7 +69,7 @@ class WeixinLoginMiddleware(MiddlewareMixin):
             return None
 
         # 验证OK
-        if request.weixin_user.is_authenticated():
+        if request.weixin_user.is_authenticated:
             return None
 
         # 微信登录失效或者未通过验证，直接重定向到微信登录

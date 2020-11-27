@@ -5,7 +5,6 @@
 import logging
 import time
 import random
-import urllib
 
 from django.http import HttpResponseRedirect, HttpResponse
 
@@ -14,9 +13,12 @@ from .api import WeiXinApi, QyWeiXinApi
 from .models import BkWeixinUser
 
 try:
+    # py2
     import urlparse
+    from urllib import urlencode, urlunsplit
 except ImportError:
-    from urllib import parse as urlparse
+    # py3
+    from urllib.parse import urlparse, urlencode, urlunsplit
 
 logger = logging.getLogger("app")
 
@@ -80,7 +82,7 @@ class WeixinAccount(WeixinAccountSingleton):
             'scope': weixin_settings.WEIXIN_SCOPE,
             'state': state
         }
-        params = urllib.urlencode(params)
+        params = urlencode(params)
         redirect_uri = '%s?%s#wechat_redirect' % (self.WEIXIN_OAUTH_URL, params)
         return redirect_uri
 
@@ -88,10 +90,10 @@ class WeixinAccount(WeixinAccountSingleton):
         """
         跳转到微信登录
         """
-        url = urllib.urlparse(request.build_absolute_uri())
+        url = urlparse(request.build_absolute_uri())
         path = weixin_settings.WEIXIN_LOGIN_URL
-        query = urllib.urlencode({'curl': request.get_full_path()})
-        callback_url = urlparse.urlunsplit((url.scheme, url.netloc, path, query, url.fragment))
+        query = urlencode({'curl': request.get_full_path()})
+        callback_url = urlunsplit((url.scheme, url.netloc, path, query, url.fragment))
         state = self.set_weixin_oauth_state(request)
         redirect_uri = self.get_oauth_redirect_url(callback_url, state)
         return HttpResponseRedirect(redirect_uri)

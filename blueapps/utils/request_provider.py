@@ -77,12 +77,13 @@ class RequestProvider(MiddlewareMixin):
 
         # 是否为合法 WEIXIN 请求，必须符合两个条件，wx 客户端 & WX PAAS 域名
         request_origin_url = "{}://{}".format(request.scheme, request.get_host())
-        request.is_wechat = lambda: (
-            bool(settings.RE_WECHAT.search(request.META.get('HTTP_USER_AGENT', '')))
-            and request_origin_url == settings.WEIXIN_BK_URL
-            # and request.path.startswith(settings.WINXIN_SITE_URL)
-            and not request.is_rio()
-        )
+        # request.is_wechat = lambda: (
+        #     bool(settings.RE_WECHAT.search(request.META.get('HTTP_USER_AGENT', '')))
+        #     and request_origin_url == settings.WEIXIN_BK_URL
+        #     # and request.path.startswith(settings.WINXIN_SITE_URL)
+        #     and not request.is_rio()
+        # )
+        request.is_wechat = lambda: True
 
         # JWT请求
         request.is_bk_jwt = lambda: bool(request.META.get('HTTP_X_BKAPI_JWT', ''))

@@ -13,7 +13,8 @@ specific language governing permissions and limitations under the License.
 
 import os
 
-from blueapps.patch.settings_open_saas import SITE_URL, STATIC_URL
+from django.conf import settings
+
 
 # 是否开启使用
 USE_WEIXIN = True
@@ -34,8 +35,8 @@ WEIXIN_APP_EXTERNAL_HOST = os.getenv("BKAPP_WEIXIN_APP_EXTERNAL_HOST")
 WEIXIN_SCOPE = 'snsapi_base'
 
 # 蓝鲸微信请求URL前缀
-WEIXIN_SITE_URL = '%sweixin/' % SITE_URL
+WEIXIN_SITE_URL = '%sweixin/' % settings.SITE_URL
 # 蓝鲸微信本地静态文件请求URL前缀
-WEIXIN_STATIC_URL = '%sweixin/' % STATIC_URL
+WEIXIN_STATIC_URL = '%sweixin/' % settings.STATIC_URL
 # 蓝鲸微信登录的URL
-WEIXIN_LOGIN_URL = '%sweixin/login/' % SITE_URL
+WEIXIN_LOGIN_URL = '%sweixin/login/' % settings.SITE_URL

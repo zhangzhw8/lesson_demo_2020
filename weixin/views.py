@@ -21,6 +21,7 @@ from weixin.core.decorators import weixin_login_exempt
 def login_exempt_view(request):
     return render(request, 'weixin/index.html')
 
+
 def index(request):
     """
     首页

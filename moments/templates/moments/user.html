@@ -45,7 +45,7 @@
     <script>
         function update_user() {
             $.ajax({
-                url:'/users/' + "{{ user.id }}" + "/",
+                url:'{{ SITE_URL }}users/' + "{{ user.id }}" + "/",
                 // 请求方法为patch
                 type: 'patch',
                 // 将data中的csrftoken移动到headers

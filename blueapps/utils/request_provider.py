@@ -83,9 +83,6 @@ class RequestProvider(MiddlewareMixin):
             and request.path.startswith(settings.WEIXIN_SITE_URL)
             and not request.is_rio()
         )
-        print(request_origin_url, settings.WEIXIN_BK_URL)
-        print(request.path, settings.WEIXIN_SITE_URL)
-        # request.is_wechat = lambda: True
 
         # JWT请求
         request.is_bk_jwt = lambda: bool(request.META.get('HTTP_X_BKAPI_JWT', ''))

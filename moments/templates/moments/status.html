@@ -120,7 +120,7 @@
 
         function like(status_id){
             $.ajax({
-                url:'/like',
+                url:'{{ SITE_URL }}like',
                 type:'post',
                 data:{
                     "status_id":status_id,
